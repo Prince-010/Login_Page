@@ -1,0 +1,85 @@
+#include <iostream>
+#include <vector>
+#include <string>
+#include <algorithm>
+
+// Use a shorter name for long long
+using ll = long long;
+
+// Define a large constant for infinity
+const ll INF = 4e18; // A very large number, larger than any possible cost
+
+int main() {
+    // Fast I/O to handle large inputs efficiently
+    std::ios_base::sync_with_stdio(false);
+    std::cin.tie(NULL);
+
+    int n;
+    std::cin >> n;
+
+    // Store costs in a vector of long longs to prevent overflow
+    std::vector<ll> costs(n);
+    for (int i = 0; i < n; ++i) {
+        std::cin >> costs[i];
+    }
+
+    // Read the first string to initialize our DP state
+    std::string prev_s, prev_rs;
+    std::cin >> prev_s;
+    prev_rs = prev_s;
+    std::reverse(prev_rs.begin(), prev_rs.end());
+
+    // dp_prev_0: min cost up to the previous string, un-reversed
+    // dp_prev_1: min cost up to the previous string, reversed
+    ll dp_prev_0 = 0;
+    ll dp_prev_1 = costs[0];
+
+    // Iterate from the second string to the end
+    for (int i = 1; i < n; ++i) {
+        // Read the current string and create its reversed version
+        std::string curr_s, curr_rs;
+        std::cin >> curr_s;
+        curr_rs = curr_s;
+        std::reverse(curr_rs.begin(), curr_rs.end());
+        
+        // Variables to store the minimum costs for the current state
+        ll dp_curr_0 = INF;
+        ll dp_curr_1 = INF;
+
+        // --- Calculate cost for keeping the current string as is ---
+        if (curr_s >= prev_s) {
+            dp_curr_0 = std::min(dp_curr_0, dp_prev_0);
+        }
+        if (curr_s >= prev_rs) {
+            dp_curr_0 = std::min(dp_curr_0, dp_prev_1);
+        }
+
+        // --- Calculate cost for reversing the current string ---
+        if (curr_rs >= prev_s) {
+            dp_curr_1 = std::min(dp_curr_1, dp_prev_0 + costs[i]);
+        }
+        if (curr_rs >= prev_rs) {
+            dp_curr_1 = std::min(dp_curr_1, dp_prev_1 + costs[i]);
+        }
+
+        // Update the previous state for the next iteration
+        dp_prev_0 = dp_curr_0;
+        dp_prev_1 = dp_curr_1;
+
+        // Update the previous strings for the next iteration
+        prev_s = curr_s;
+        prev_rs = curr_rs;
+    }
+
+    // The final answer is the minimum of the two possible final states
+    ll result = std::min(dp_prev_0, dp_prev_1);
+
+    // If the result is still infinity, no solution was found
+    if (result >= INF) {
+        std::cout << -1 << std::endl;
+    } else {
+        std::cout << result << std::endl;
+    }
+
+    return 0;
+}
